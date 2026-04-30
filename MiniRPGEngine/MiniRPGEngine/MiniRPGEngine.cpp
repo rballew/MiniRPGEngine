@@ -106,7 +106,7 @@ public:
             health = maxHealth;
         }
 
-        cout << "\nYou rest by a small fire and recover health.\n";
+        cout << "\nYou rest and recover health.\n";
         cout << "Health is now " << health << "/" << maxHealth << ".\n";
     }
 };
@@ -126,16 +126,26 @@ public:
     }
 };
 
-void showMenu() {
-    cout << "\n=== ShadowVale RPG ===\n";
-    cout << "1. Explore forest\n";
-    cout << "2. Check stats\n";
-    cout << "3. Open inventory\n";
-    cout << "4. Use Healing Herb\n";
-    cout << "5. Rest\n";
-    cout << "6. Exit game\n";
-    cout << "Choose an option: ";
-}
+class Room {
+public:
+    string name;
+    string description;
+    int north;
+    int south;
+    int east;
+    int west;
+    bool hasRandomEvents;
+
+    Room(string roomName, string roomDescription, int n, int s, int e, int w, bool randomEvents) {
+        name = roomName;
+        description = roomDescription;
+        north = n;
+        south = s;
+        east = e;
+        west = w;
+        hasRandomEvents = randomEvents;
+    }
+};
 
 void fightEnemy(Player& player, Enemy enemy) {
     cout << "\nA " << enemy.name << " appears!\n";
@@ -190,17 +200,32 @@ void fightEnemy(Player& player, Enemy enemy) {
     player.gold += enemy.goldReward;
 }
 
-void exploreForest(Player& player) {
-    cout << "\nYou step into the dark forest...\n";
+void triggerRoomEvent(Player& player, Room room) {
+    if (!room.hasRandomEvents) {
+        if (room.name == "Old Shrine") {
+            cout << "\nThe shrine feels quiet and safe.\n";
+            cout << "A soft light restores 10 health.\n";
+
+            player.health += 10;
+
+            if (player.health > player.maxHealth) {
+                player.health = player.maxHealth;
+            }
+
+            cout << "Health is now " << player.health << "/" << player.maxHealth << ".\n";
+        }
+
+        return;
+    }
 
     int event = rand() % 5;
 
     if (event == 0) {
-        cout << "You find a Healing Herb.\n";
+        cout << "\nYou find a Healing Herb.\n";
         player.inventory.push_back("Healing Herb");
     }
     else if (event == 1) {
-        cout << "You find a small pouch of gold.\n";
+        cout << "\nYou find a small pouch of gold.\n";
         player.gold += 10;
         cout << "You gained 10 gold.\n";
     }
@@ -218,6 +243,78 @@ void exploreForest(Player& player) {
     }
 }
 
+void showRoom(const Room& room) {
+    cout << "\n=== " << room.name << " ===\n";
+    cout << room.description << "\n";
+}
+
+void showMenu() {
+    cout << "\n=== Actions ===\n";
+    cout << "1. Move north\n";
+    cout << "2. Move south\n";
+    cout << "3. Move east\n";
+    cout << "4. Move west\n";
+    cout << "5. Check stats\n";
+    cout << "6. Open inventory\n";
+    cout << "7. Use Healing Herb\n";
+    cout << "8. Rest\n";
+    cout << "9. Exit game\n";
+    cout << "Choose an option: ";
+}
+
+void movePlayer(int& currentRoomIndex, vector<Room>& rooms, int destination, Player& player) {
+    if (destination == -1) {
+        cout << "\nYou cannot go that way.\n";
+        return;
+    }
+
+    currentRoomIndex = destination;
+
+    showRoom(rooms[currentRoomIndex]);
+    triggerRoomEvent(player, rooms[currentRoomIndex]);
+}
+
+vector<Room> createWorld() {
+    vector<Room> rooms;
+
+    rooms.push_back(Room(
+        "Forest Path",
+        "A narrow path twists through dark trees. The air smells like rain and old leaves.",
+        1, -1, 2, -1,
+        true
+    ));
+
+    rooms.push_back(Room(
+        "Old Shrine",
+        "A cracked stone shrine stands beneath hanging vines. It feels ancient, but peaceful.",
+        -1, 0, 3, -1,
+        false
+    ));
+
+    rooms.push_back(Room(
+        "Moonlit Lake",
+        "A silver lake reflects the sky. Something moves beneath the water.",
+        3, -1, -1, 0,
+        true
+    ));
+
+    rooms.push_back(Room(
+        "Bandit Camp",
+        "Old campfires and broken crates litter the ground. This place has seen trouble.",
+        -1, 2, 4, 1,
+        true
+    ));
+
+    rooms.push_back(Room(
+        "Boss Gate",
+        "A black iron gate blocks the path. Beyond it, something powerful waits.",
+        -1, -1, -1, 3,
+        true
+    ));
+
+    return rooms;
+}
+
 int main() {
     srand(time(0));
 
@@ -227,11 +324,15 @@ int main() {
     getline(cin, playerName);
 
     Player player(playerName);
+    vector<Room> rooms = createWorld();
 
+    int currentRoomIndex = 0;
     int choice;
 
     cout << "\nWelcome to ShadowVale, " << player.name << ".\n";
-    cout << "The forest ahead is old, hungry, and full of secrets.\n";
+    cout << "The world ahead is old, hungry, and full of secrets.\n";
+
+    showRoom(rooms[currentRoomIndex]);
 
     do {
         if (player.health <= 0) {
@@ -244,26 +345,38 @@ int main() {
 
         switch (choice) {
         case 1:
-            exploreForest(player);
+            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].north, player);
             break;
 
         case 2:
-            player.showStats();
+            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].south, player);
             break;
 
         case 3:
-            player.showInventory();
+            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].east, player);
             break;
 
         case 4:
-            player.useHealingHerb();
+            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].west, player);
             break;
 
         case 5:
-            player.rest();
+            player.showStats();
             break;
 
         case 6:
+            player.showInventory();
+            break;
+
+        case 7:
+            player.useHealingHerb();
+            break;
+
+        case 8:
+            player.rest();
+            break;
+
+        case 9:
             cout << "\nThanks for playing ShadowVale RPG.\n";
             break;
 
@@ -272,7 +385,7 @@ int main() {
             break;
         }
 
-    } while (choice != 6);
+    } while (choice != 9);
 
     return 0;
 }
