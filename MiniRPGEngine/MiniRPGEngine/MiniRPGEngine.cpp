@@ -44,6 +44,26 @@ public:
         }
     }
 
+    void useHealingHerb() {
+        for (int i = 0; i < inventory.size(); i++) {
+            if (inventory[i] == "Healing Herb") {
+                health += 30;
+
+                if (health > maxHealth) {
+                    health = maxHealth;
+                }
+
+                inventory.erase(inventory.begin() + i);
+
+                cout << "\nYou used a Healing Herb.\n";
+                cout << "Health is now " << health << "/" << maxHealth << ".\n";
+                return;
+            }
+        }
+
+        cout << "\nYou do not have a Healing Herb.\n";
+    }
+
     void rest() {
         health += 25;
 
@@ -76,8 +96,9 @@ void showMenu() {
     cout << "1. Explore forest\n";
     cout << "2. Check stats\n";
     cout << "3. Open inventory\n";
-    cout << "4. Rest\n";
-    cout << "5. Exit game\n";
+    cout << "4. Use Healing Herb\n";
+    cout << "5. Rest\n";
+    cout << "6. Exit game\n";
     cout << "Choose an option: ";
 }
 
@@ -89,7 +110,8 @@ void fightEnemy(Player& player, Enemy enemy) {
         cout << enemy.name << " Health: " << enemy.health << "\n";
 
         cout << "\n1. Attack\n";
-        cout << "2. Run\n";
+        cout << "2. Use Healing Herb\n";
+        cout << "3. Run\n";
         cout << "Choose an action: ";
 
         int choice;
@@ -105,6 +127,14 @@ void fightEnemy(Player& player, Enemy enemy) {
             }
         }
         else if (choice == 2) {
+            player.useHealingHerb();
+
+            if (enemy.health > 0) {
+                player.health -= enemy.attack;
+                cout << "The " << enemy.name << " attacks while you recover and deals " << enemy.attack << " damage.\n";
+            }
+        }
+        else if (choice == 3) {
             cout << "\nYou escape back to the path.\n";
             return;
         }
@@ -131,7 +161,7 @@ void exploreForest(Player& player) {
     int event = rand() % 4;
 
     if (event == 0) {
-        cout << "You find a healing herb.\n";
+        cout << "You find a Healing Herb.\n";
         player.inventory.push_back("Healing Herb");
     }
     else if (event == 1) {
@@ -187,10 +217,14 @@ int main() {
             break;
 
         case 4:
-            player.rest();
+            player.useHealingHerb();
             break;
 
         case 5:
+            player.rest();
+            break;
+
+        case 6:
             cout << "\nThanks for playing ShadowVale RPG.\n";
             break;
 
@@ -199,7 +233,7 @@ int main() {
             break;
         }
 
-    } while (choice != 5);
+    } while (choice != 6);
 
     return 0;
 }
