@@ -36,11 +36,11 @@ public:
 
         if (inventory.empty()) {
             cout << "Your inventory is empty.\n";
-            return;
         }
-
-        for (int i = 0; i < inventory.size(); i++) {
-            cout << i + 1 << ". " << inventory[i] << "\n";
+        else {
+            for (int i = 0; i < inventory.size(); i++) {
+                cout << i + 1 << ". " << inventory[i] << "\n";
+            }
         }
     }
 
@@ -109,7 +109,7 @@ void fightEnemy(Player& player, Enemy enemy) {
             return;
         }
         else {
-            cout << "\nInvalid choice. The enemy takes advantage of your hesitation!\n";
+            cout << "\nInvalid choice. The enemy attacks while you hesitate!\n";
             player.health -= enemy.attack;
         }
     }
@@ -121,6 +121,7 @@ void fightEnemy(Player& player, Enemy enemy) {
 
     cout << "\nYou defeated the " << enemy.name << "!\n";
     cout << "You found " << enemy.goldReward << " gold.\n";
+
     player.gold += enemy.goldReward;
 }
 
@@ -176,18 +177,23 @@ int main() {
         case 1:
             exploreForest(player);
             break;
+
         case 2:
             player.showStats();
             break;
+
         case 3:
             player.showInventory();
             break;
+
         case 4:
             player.rest();
             break;
+
         case 5:
             cout << "\nThanks for playing ShadowVale RPG.\n";
             break;
+
         default:
             cout << "\nInvalid choice. Try again.\n";
             break;
