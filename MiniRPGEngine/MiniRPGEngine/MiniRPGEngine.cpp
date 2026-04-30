@@ -24,6 +24,9 @@ public:
     int maxHealth;
     int attack;
     int gold;
+    int level;
+    int xp;
+    int xpToNextLevel;
     vector<string> inventory;
 
     Player(string playerName) {
@@ -32,6 +35,9 @@ public:
         health = 100;
         attack = 15;
         gold = 0;
+        level = 1;
+        xp = 0;
+        xpToNextLevel = 50;
     }
 
     bool hasItem(string itemName) {
@@ -47,6 +53,8 @@ public:
     void showStats() {
         cout << "\n=== Player Stats ===\n";
         cout << "Name: " << name << "\n";
+        cout << "Level: " << level << "\n";
+        cout << "XP: " << xp << "/" << xpToNextLevel << "\n";
         cout << "Health: " << health << "/" << maxHealth << "\n";
         cout << "Attack: " << attack << "\n";
         cout << "Gold: " << gold << "\n";
@@ -99,6 +107,31 @@ public:
         cout << "Attack is now " << attack << ".\n";
     }
 
+    void gainXP(int amount) {
+        xp += amount;
+
+        cout << "You gained " << amount << " XP.\n";
+
+        while (xp >= xpToNextLevel) {
+            xp -= xpToNextLevel;
+            levelUp();
+        }
+    }
+
+    void levelUp() {
+        level++;
+        maxHealth += 20;
+        attack += 5;
+        health = maxHealth;
+        xpToNextLevel += 25;
+
+        cout << "\n=== Level Up! ===\n";
+        cout << "You reached level " << level << "!\n";
+        cout << "Max health increased to " << maxHealth << ".\n";
+        cout << "Attack increased to " << attack << ".\n";
+        cout << "Your health has been fully restored.\n";
+    }
+
     void rest() {
         health += 25;
 
@@ -117,12 +150,14 @@ public:
     int health;
     int attack;
     int goldReward;
+    int xpReward;
 
-    Enemy(string enemyName, int enemyHealth, int enemyAttack, int reward) {
+    Enemy(string enemyName, int enemyHealth, int enemyAttack, int reward, int xpAmount) {
         name = enemyName;
         health = enemyHealth;
         attack = enemyAttack;
         goldReward = reward;
+        xpReward = xpAmount;
     }
 };
 
@@ -198,6 +233,8 @@ bool fightEnemy(Player& player, Enemy enemy) {
     cout << "You found " << enemy.goldReward << " gold.\n";
 
     player.gold += enemy.goldReward;
+    player.gainXP(enemy.xpReward);
+
     return true;
 }
 
@@ -206,7 +243,7 @@ bool fightBoss(Player& player) {
     cout << "A Shadow Beast rises from the darkness beyond it.\n";
     cout << "This is the final fight.\n";
 
-    Enemy boss("Shadow Beast", 90, 15, 100);
+    Enemy boss("Shadow Beast", 90, 15, 100, 100);
 
     bool defeatedBoss = fightEnemy(player, boss);
 
@@ -265,11 +302,11 @@ void triggerRoomEvent(Player& player, Room room, bool& gameWon) {
         player.equipWeapon(rustySword);
     }
     else if (event == 3) {
-        Enemy goblin("Goblin", 30, 8, 15);
+        Enemy goblin("Goblin", 30, 8, 15, 20);
         fightEnemy(player, goblin);
     }
     else {
-        Enemy wolf("Wolf", 40, 10, 20);
+        Enemy wolf("Wolf", 40, 10, 20, 30);
         fightEnemy(player, wolf);
     }
 }
