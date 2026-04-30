@@ -6,6 +6,17 @@
 
 using namespace std;
 
+class Weapon {
+public:
+    string name;
+    int attackBonus;
+
+    Weapon(string weaponName, int bonus) {
+        name = weaponName;
+        attackBonus = bonus;
+    }
+};
+
 class Player {
 public:
     string name;
@@ -21,6 +32,16 @@ public:
         health = 100;
         attack = 15;
         gold = 0;
+    }
+
+    bool hasItem(string itemName) {
+        for (const string& item : inventory) {
+            if (item == itemName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void showStats() {
@@ -62,6 +83,20 @@ public:
         }
 
         cout << "\nYou do not have a Healing Herb.\n";
+    }
+
+    void equipWeapon(Weapon weapon) {
+        if (hasItem(weapon.name)) {
+            cout << "\nYou already have the " << weapon.name << ".\n";
+            return;
+        }
+
+        inventory.push_back(weapon.name);
+        attack += weapon.attackBonus;
+
+        cout << "\nYou found a " << weapon.name << "!\n";
+        cout << "Your attack increased by " << weapon.attackBonus << ".\n";
+        cout << "Attack is now " << attack << ".\n";
     }
 
     void rest() {
@@ -158,7 +193,7 @@ void fightEnemy(Player& player, Enemy enemy) {
 void exploreForest(Player& player) {
     cout << "\nYou step into the dark forest...\n";
 
-    int event = rand() % 4;
+    int event = rand() % 5;
 
     if (event == 0) {
         cout << "You find a Healing Herb.\n";
@@ -170,6 +205,10 @@ void exploreForest(Player& player) {
         cout << "You gained 10 gold.\n";
     }
     else if (event == 2) {
+        Weapon rustySword("Rusty Sword", 10);
+        player.equipWeapon(rustySword);
+    }
+    else if (event == 3) {
         Enemy goblin("Goblin", 30, 8, 15);
         fightEnemy(player, goblin);
     }
