@@ -147,7 +147,7 @@ public:
     }
 };
 
-void fightEnemy(Player& player, Enemy enemy) {
+bool fightEnemy(Player& player, Enemy enemy) {
     cout << "\nA " << enemy.name << " appears!\n";
 
     while (player.health > 0 && enemy.health > 0) {
@@ -181,7 +181,7 @@ void fightEnemy(Player& player, Enemy enemy) {
         }
         else if (choice == 3) {
             cout << "\nYou escape back to the path.\n";
-            return;
+            return false;
         }
         else {
             cout << "\nInvalid choice. The enemy attacks while you hesitate!\n";
@@ -191,16 +191,47 @@ void fightEnemy(Player& player, Enemy enemy) {
 
     if (player.health <= 0) {
         cout << "\nYou were defeated...\n";
-        return;
+        return false;
     }
 
     cout << "\nYou defeated the " << enemy.name << "!\n";
     cout << "You found " << enemy.goldReward << " gold.\n";
 
     player.gold += enemy.goldReward;
+    return true;
 }
 
-void triggerRoomEvent(Player& player, Room room) {
+bool fightBoss(Player& player) {
+    cout << "\nThe black iron gate groans open.\n";
+    cout << "A Shadow Beast rises from the darkness beyond it.\n";
+    cout << "This is the final fight.\n";
+
+    Enemy boss("Shadow Beast", 90, 15, 100);
+
+    bool defeatedBoss = fightEnemy(player, boss);
+
+    if (player.health <= 0) {
+        return false;
+    }
+
+    if (defeatedBoss) {
+        cout << "\n=== Victory ===\n";
+        cout << "The Shadow Beast falls, and the forest grows quiet.\n";
+        cout << "ShadowVale is safe, at least for now.\n";
+        cout << "You completed the adventure, " << player.name << "!\n";
+        return true;
+    }
+
+    cout << "\nYou retreat from the Boss Gate.\n";
+    return false;
+}
+
+void triggerRoomEvent(Player& player, Room room, bool& gameWon) {
+    if (room.name == "Boss Gate") {
+        gameWon = fightBoss(player);
+        return;
+    }
+
     if (!room.hasRandomEvents) {
         if (room.name == "Old Shrine") {
             cout << "\nThe shrine feels quiet and safe.\n";
@@ -262,7 +293,7 @@ void showMenu() {
     cout << "Choose an option: ";
 }
 
-void movePlayer(int& currentRoomIndex, vector<Room>& rooms, int destination, Player& player) {
+void movePlayer(int& currentRoomIndex, vector<Room>& rooms, int destination, Player& player, bool& gameWon) {
     if (destination == -1) {
         cout << "\nYou cannot go that way.\n";
         return;
@@ -271,7 +302,7 @@ void movePlayer(int& currentRoomIndex, vector<Room>& rooms, int destination, Pla
     currentRoomIndex = destination;
 
     showRoom(rooms[currentRoomIndex]);
-    triggerRoomEvent(player, rooms[currentRoomIndex]);
+    triggerRoomEvent(player, rooms[currentRoomIndex], gameWon);
 }
 
 vector<Room> createWorld() {
@@ -309,7 +340,7 @@ vector<Room> createWorld() {
         "Boss Gate",
         "A black iron gate blocks the path. Beyond it, something powerful waits.",
         -1, -1, -1, 3,
-        true
+        false
     ));
 
     return rooms;
@@ -328,6 +359,7 @@ int main() {
 
     int currentRoomIndex = 0;
     int choice;
+    bool gameWon = false;
 
     cout << "\nWelcome to ShadowVale, " << player.name << ".\n";
     cout << "The world ahead is old, hungry, and full of secrets.\n";
@@ -340,24 +372,29 @@ int main() {
             break;
         }
 
+        if (gameWon) {
+            cout << "\nThanks for playing ShadowVale RPG.\n";
+            break;
+        }
+
         showMenu();
         cin >> choice;
 
         switch (choice) {
         case 1:
-            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].north, player);
+            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].north, player, gameWon);
             break;
 
         case 2:
-            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].south, player);
+            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].south, player, gameWon);
             break;
 
         case 3:
-            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].east, player);
+            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].east, player, gameWon);
             break;
 
         case 4:
-            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].west, player);
+            movePlayer(currentRoomIndex, rooms, rooms[currentRoomIndex].west, player, gameWon);
             break;
 
         case 5:
