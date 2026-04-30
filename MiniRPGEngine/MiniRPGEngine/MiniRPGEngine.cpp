@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <limits>
 
 using namespace std;
 
@@ -181,6 +182,27 @@ public:
         hasRandomEvents = randomEvents;
     }
 };
+int getNumberInput(int minChoice, int maxChoice) {
+    int choice;
+
+    while (true) {
+        cin >> choice;
+
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Please enter a number between " << minChoice << " and " << maxChoice << ": ";
+        }
+        else if (choice < minChoice || choice > maxChoice) {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Please enter a number between " << minChoice << " and " << maxChoice << ": ";
+        }
+        else {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return choice;
+        }
+    }
+}
 
 bool fightEnemy(Player& player, Enemy enemy) {
     cout << "\nA " << enemy.name << " appears!\n";
@@ -194,8 +216,7 @@ bool fightEnemy(Player& player, Enemy enemy) {
         cout << "3. Run\n";
         cout << "Choose an action: ";
 
-        int choice;
-        cin >> choice;
+        int choice = getNumberInput(1, 3);
 
         if (choice == 1) {
             enemy.health -= player.attack;
@@ -415,7 +436,7 @@ int main() {
         }
 
         showMenu();
-        cin >> choice;
+        choice = getNumberInput(1, 9);
 
         switch (choice) {
         case 1:
