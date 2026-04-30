@@ -39,6 +39,8 @@ public:
         level = 1;
         xp = 0;
         xpToNextLevel = 50;
+
+        inventory.push_back("Healing Herb");
     }
 
     bool hasItem(string itemName) {
