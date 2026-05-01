@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <limits>
+#include <fstream>
 
 using namespace std;
 
@@ -184,6 +185,7 @@ public:
         hasRandomEvents = randomEvents;
     }
 };
+
 int getNumberInput(int minChoice, int maxChoice) {
     int choice;
 
@@ -204,6 +206,70 @@ int getNumberInput(int minChoice, int maxChoice) {
             return choice;
         }
     }
+}
+
+void saveGame(const Player& player, int currentRoomIndex) {
+    ofstream file("savegame.txt");
+
+    if (!file) {
+        cout << "\nCould not save game.\n";
+        return;
+    }
+
+    file << player.name << "\n";
+    file << player.health << "\n";
+    file << player.maxHealth << "\n";
+    file << player.attack << "\n";
+    file << player.gold << "\n";
+    file << player.level << "\n";
+    file << player.xp << "\n";
+    file << player.xpToNextLevel << "\n";
+    file << currentRoomIndex << "\n";
+    file << player.inventory.size() << "\n";
+
+    for (const string& item : player.inventory) {
+        file << item << "\n";
+    }
+
+    cout << "\nGame saved successfully.\n";
+}
+
+void loadGame(Player& player, int& currentRoomIndex) {
+    ifstream file("savegame.txt");
+
+    if (!file) {
+        cout << "\nNo save file found.\n";
+        return;
+    }
+
+    getline(file, player.name);
+    file >> player.health;
+    file >> player.maxHealth;
+    file >> player.attack;
+    file >> player.gold;
+    file >> player.level;
+    file >> player.xp;
+    file >> player.xpToNextLevel;
+    file >> currentRoomIndex;
+
+    int inventoryCount;
+    file >> inventoryCount;
+
+    file.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    player.inventory.clear();
+
+    for (int i = 0; i < inventoryCount; i++) {
+        string item;
+        getline(file, item);
+        player.inventory.push_back(item);
+    }
+
+    if (currentRoomIndex < 0 || currentRoomIndex > 4) {
+        currentRoomIndex = 0;
+    }
+
+    cout << "\nGame loaded successfully.\n";
 }
 
 bool fightEnemy(Player& player, Enemy enemy) {
@@ -240,10 +306,6 @@ bool fightEnemy(Player& player, Enemy enemy) {
         else if (choice == 3) {
             cout << "\nYou escape back to the path.\n";
             return false;
-        }
-        else {
-            cout << "\nInvalid choice. The enemy attacks while you hesitate!\n";
-            player.health -= enemy.attack;
         }
     }
 
@@ -349,7 +411,9 @@ void showMenu() {
     cout << "6. Open inventory\n";
     cout << "7. Use Healing Herb\n";
     cout << "8. Rest\n";
-    cout << "9. Exit game\n";
+    cout << "9. Save game\n";
+    cout << "10. Load game\n";
+    cout << "11. Exit game\n";
     cout << "Choose an option: ";
 }
 
@@ -438,7 +502,7 @@ int main() {
         }
 
         showMenu();
-        choice = getNumberInput(1, 9);
+        choice = getNumberInput(1, 11);
 
         switch (choice) {
         case 1:
@@ -474,15 +538,20 @@ int main() {
             break;
 
         case 9:
-            cout << "\nThanks for playing ShadowVale RPG.\n";
+            saveGame(player, currentRoomIndex);
             break;
 
-        default:
-            cout << "\nInvalid choice. Try again.\n";
+        case 10:
+            loadGame(player, currentRoomIndex);
+            showRoom(rooms[currentRoomIndex]);
+            break;
+
+        case 11:
+            cout << "\nThanks for playing ShadowVale RPG.\n";
             break;
         }
 
-    } while (choice != 9);
+    } while (choice != 11);
 
     return 0;
 }
