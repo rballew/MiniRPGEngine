@@ -70,3 +70,23 @@ A C++ console-based mini RPG engine where the player can explore, collect items,
 
 \- Split the project into multiple files
 
+
+
+\- Directional room movement
+
+\- Random room events
+
+\- Enemy combat system
+
+\- Boss fight and win condition
+
+\- XP and leveling system
+
+\- Weapon upgrade system
+
+\- Usable healing items
+
+\- Save and load system using file I/O
+
+\- Input validation for safer menu choices
+
